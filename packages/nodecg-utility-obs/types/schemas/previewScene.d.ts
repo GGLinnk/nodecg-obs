@@ -23,6 +23,6 @@ export type PreviewScene = null | {
 		x: number;
 		y: number;
 		parentGroupName?: string;
-		groupChildren?: any[];
+		groupChildren?: unknown[];
 	}[];
 };

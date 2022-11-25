@@ -1,6 +1,6 @@
 {
   "name": "nodecg-utility-obs",
-  "version": "6.1.7",
+  "version": "6.2.0",
   "description": "A NodeCG utility that exposes a set of Replicants, Messages, and other hooks for interacting with OBS via obs-websocket",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,14 +19,14 @@
   },
   "license": "MIT",
   "dependencies": {
-    "clone": "^2.1.1",
-    "obs-websocket-js": "^4.0.1"
+    "clone": "^2.1.2",
+    "obs-websocket-js": "^4.0.3"
   },
   "devDependencies": {
-    "app-root-path": "^2.1.0",
-    "ava": "^0.21.0",
-    "mock-nodecg": "^1.0.1",
-    "mockery": "^2.0.0",
+    "app-root-path": "^3.0.0",
+    "ava": "^4.1.0",
+    "mock-nodecg": "^1.8.1",
+    "mockery": "^2.1.0",
     "npm-run-all": "^4.1.5"
   },
   "keywords": [

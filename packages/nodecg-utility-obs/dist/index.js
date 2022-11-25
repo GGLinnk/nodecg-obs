@@ -1,5 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.OBSUtility = void 0;
 // Native
 const path = require("path");
 // Packages
@@ -29,6 +30,7 @@ class OBSUtility extends OBSWebSocket {
         const programScene = nodecg.Replicant(`${namespace}:programScene`, { schemaPath: buildSchemaPath('programScene') });
         const previewScene = nodecg.Replicant(`${namespace}:previewScene`, { schemaPath: buildSchemaPath('previewScene') });
         const sceneList = nodecg.Replicant(`${namespace}:sceneList`, { schemaPath: buildSchemaPath('sceneList') });
+        const sourceList = nodecg.Replicant(`${namespace}:sourceList`, { schemaPath: buildSchemaPath('sourceList') });
         const transitioning = nodecg.Replicant(`${namespace}:transitioning`, { schemaPath: buildSchemaPath('transitioning') });
         const studioMode = nodecg.Replicant(`${namespace}:studioMode`, { schemaPath: buildSchemaPath('studioMode') });
         const log = new nodecg.Logger(`${nodecg.bundleName}:${namespace}`);
@@ -41,6 +43,7 @@ class OBSUtility extends OBSWebSocket {
             programScene,
             previewScene,
             sceneList,
+            sourceList,
             transitioning,
             studioMode
         };
@@ -227,6 +230,15 @@ class OBSUtility extends OBSWebSocket {
         this.on('ScenesChanged', () => {
             this._updateScenesList();
         });
+        this.on('SourceCreated', () => {
+            this._updateSourcesList();
+        });
+        this.on('SourceDestroyed', () => {
+            this._updateSourcesList();
+        });
+        this.on('SourceRenamed', () => {
+            this._updateSourcesList();
+        });
         this.on('PreviewSceneChanged', data => {
             previewScene.value = {
                 name: data['scene-name'],
@@ -299,6 +311,7 @@ class OBSUtility extends OBSWebSocket {
     _fullUpdate() {
         return Promise.all([
             this._updateScenesList(),
+            this._updateSourcesList(),
             this._updateProgramScene(),
             this._updatePreviewScene(),
             this._updateStudioMode()
@@ -315,6 +328,19 @@ class OBSUtility extends OBSWebSocket {
             return res;
         }).catch(err => {
             this.log.error('Error updating scenes list:', err);
+        });
+    }
+    /**
+     * Updates the sourceList replicant with the current value from OBS.
+     * By extension, it also updates the customSourcesList replicant.
+     * @returns {Promise}
+     */
+    _updateSourcesList() {
+        return this.send('GetSourcesList').then(res => {
+            this.replicants.sourceList.value = res.sources.map(source => source.name);
+            return res;
+        }).catch(err => {
+            this.log.error('Error updating sources list:', err);
         });
     }
     /**

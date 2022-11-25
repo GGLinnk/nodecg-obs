@@ -4,6 +4,7 @@ import { Websocket } from '../types/schemas/websocket';
 import { ProgramScene } from '../types/schemas/programScene';
 import { PreviewScene } from '../types/schemas/previewScene';
 import { SceneList } from '../types/schemas/sceneList';
+import { SourceList } from '../types/schemas/sourceList';
 import { Transitioning } from '../types/schemas/transitioning';
 import { StudioMode } from '../types/schemas/studioMode';
 interface TransitionOptions {
@@ -23,6 +24,7 @@ export declare class OBSUtility extends OBSWebSocket {
         programScene: Replicant<ProgramScene>;
         previewScene: Replicant<PreviewScene>;
         sceneList: Replicant<SceneList>;
+        sourceList: Replicant<SourceList>;
         transitioning: Replicant<Transitioning>;
         studioMode: Replicant<StudioMode>;
     };
@@ -47,6 +49,14 @@ export declare class OBSUtility extends OBSWebSocket {
     }, void | {
         messageId: string;
         status: "ok";
+        sources: {
+            name: string;
+            typeId: string;
+            type: string;
+        }[];
+    }, void | {
+        messageId: string;
+        status: "ok";
         name: string;
         sources: OBSWebSocket.SceneItem[];
     }, void, void]>;
@@ -68,6 +78,14 @@ export declare class OBSUtility extends OBSWebSocket {
     }, void | {
         messageId: string;
         status: "ok";
+        sources: {
+            name: string;
+            typeId: string;
+            type: string;
+        }[];
+    }, void | {
+        messageId: string;
+        status: "ok";
         name: string;
         sources: OBSWebSocket.SceneItem[];
     }, void, void]>;
@@ -81,6 +99,20 @@ export declare class OBSUtility extends OBSWebSocket {
         status: "ok";
         "current-scene": string;
         scenes: OBSWebSocket.Scene[];
+    }>;
+    /**
+     * Updates the sourceList replicant with the current value from OBS.
+     * By extension, it also updates the customSourcesList replicant.
+     * @returns {Promise}
+     */
+    _updateSourcesList(): Promise<void | {
+        messageId: string;
+        status: "ok";
+        sources: {
+            name: string;
+            typeId: string;
+            type: string;
+        }[];
     }>;
     /**
      * Updates the programScene replicant with the current value from OBS.

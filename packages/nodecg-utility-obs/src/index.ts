@@ -6,14 +6,15 @@ import path = require('path');
 // Packages
 import clone = require('clone');
 import OBSWebSocket = require('obs-websocket-js');
-import {NodeCG, Replicant, Logger} from 'nodecg/types/server';
-import {Websocket} from '../types/schemas/websocket';
-import {ProgramScene} from '../types/schemas/programScene';
-import {PreviewScene} from '../types/schemas/previewScene';
-import {SceneList} from '../types/schemas/sceneList';
-import {Transitioning} from '../types/schemas/transitioning';
-import {StudioMode} from '../types/schemas/studioMode';
-import {Namespaces} from '../types/schemas/namespaces';
+import { NodeCG, Replicant, Logger } from 'nodecg/types/server';
+import { Websocket } from '../types/schemas/websocket';
+import { ProgramScene } from '../types/schemas/programScene';
+import { PreviewScene } from '../types/schemas/previewScene';
+import { SceneList } from '../types/schemas/sceneList';
+import { SourceList } from '../types/schemas/sourceList';
+import { Transitioning } from '../types/schemas/transitioning';
+import { StudioMode } from '../types/schemas/studioMode';
+import { Namespaces } from '../types/schemas/namespaces';
 
 interface TransitionOptions {
 	'with-transition': {
@@ -37,6 +38,7 @@ export class OBSUtility extends OBSWebSocket {
 		programScene: Replicant<ProgramScene>;
 		previewScene: Replicant<PreviewScene>;
 		sceneList: Replicant<SceneList>;
+		sourceList: Replicant<SourceList>;
 		transitioning: Replicant<Transitioning>;
 		studioMode: Replicant<StudioMode>;
 	};
@@ -69,6 +71,7 @@ export class OBSUtility extends OBSWebSocket {
 		const programScene = nodecg.Replicant<ProgramScene>(`${namespace}:programScene`, {schemaPath: buildSchemaPath('programScene')});
 		const previewScene = nodecg.Replicant<PreviewScene>(`${namespace}:previewScene`, {schemaPath: buildSchemaPath('previewScene')});
 		const sceneList = nodecg.Replicant<SceneList>(`${namespace}:sceneList`, {schemaPath: buildSchemaPath('sceneList')});
+		const sourceList = nodecg.Replicant<SourceList>(`${namespace}:sourceList`, {schemaPath: buildSchemaPath('sourceList')});
 		const transitioning = nodecg.Replicant<Transitioning>(`${namespace}:transitioning`, {schemaPath: buildSchemaPath('transitioning')});
 		const studioMode = nodecg.Replicant<StudioMode>(`${namespace}:studioMode`, {schemaPath: buildSchemaPath('studioMode')});
 		const log = new nodecg.Logger(`${nodecg.bundleName}:${namespace}`);
@@ -82,6 +85,7 @@ export class OBSUtility extends OBSWebSocket {
 			programScene,
 			previewScene,
 			sceneList,
+			sourceList,
 			transitioning,
 			studioMode
 		};
@@ -279,6 +283,18 @@ export class OBSUtility extends OBSWebSocket {
 			this._updateScenesList();
 		});
 
+		this.on('SourceCreated', () => {
+			this._updateSourcesList();
+		});
+
+		this.on('SourceDestroyed', () => {
+			this._updateSourcesList();
+		});
+
+		this.on('SourceRenamed', () => {
+			this._updateSourcesList();
+		});
+
 		this.on('PreviewSceneChanged', data => {
 			previewScene.value = {
 				name: data['scene-name'],
@@ -366,6 +382,7 @@ export class OBSUtility extends OBSWebSocket {
 	_fullUpdate() {
 		return Promise.all([
 			this._updateScenesList(),
+			this._updateSourcesList(),
 			this._updateProgramScene(),
 			this._updatePreviewScene(),
 			this._updateStudioMode()
@@ -383,6 +400,20 @@ export class OBSUtility extends OBSWebSocket {
 			return res;
 		}).catch(err => {
 			this.log.error('Error updating scenes list:', err);
+		});
+	}
+
+	/**
+	 * Updates the sourceList replicant with the current value from OBS.
+	 * By extension, it also updates the customSourcesList replicant.
+	 * @returns {Promise}
+	 */
+	 _updateSourcesList() {
+		return this.send('GetSourcesList').then(res => {
+			this.replicants.sourceList.value = res.sources.map(source => source.name);
+			return res;
+		}).catch(err => {
+			this.log.error('Error updating sources list:', err);
 		});
 	}
 
